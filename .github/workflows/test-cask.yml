@@ -25,10 +25,22 @@ jobs:
       - name: Audit
         run: brew audit --cask --online scottnine/filamental/filamental
 
+      # setup-homebrew trusts the checked-out tap for us, which is exactly what
+      # a real user does NOT get: since Homebrew 5.1.15 a third-party tap has to
+      # be trusted before its Ruby will even be evaluated. Drop back to an
+      # untrusted, untapped machine so the install below tests the real thing.
+      - name: Reset to a first-time-user state
+        run: |
+          brew untrust scottnine/filamental || true
+          brew untap scottnine/filamental || true
+          echo "--- trust registry ---"
+          cat "$(brew --prefix)/var/homebrew/trust.json" 2>/dev/null || echo "(none)"
+
       # The real test: downloads the DMG, verifies the checksum, mounts it and
       # links the app. Catches a stale sha256 and a renamed .app bundle, which
-      # audit alone does not.
-      - name: Install
+      # audit alone does not. This must be character-for-character the command
+      # the README tells people to run.
+      - name: Install exactly as the README instructs
         run: brew install --cask scottnine/filamental/filamental
 
       - name: Confirm the app landed
