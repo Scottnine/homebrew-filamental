@@ -32,6 +32,12 @@ jobs:
         run: brew style scottnine/filamental
 
       - name: Audit
+        env:
+          # --online hits the GitHub API to check the download URL, and the 60
+          # requests/hour unauthenticated limit is shared across the whole
+          # runner IP, so it is reliably already exhausted. The job's own token
+          # is enough; no additional secret is needed.
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: brew audit --cask --online scottnine/filamental/filamental
 
       # Since Homebrew 5.1.15 a third-party tap must be trusted before its Ruby
