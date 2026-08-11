@@ -13,11 +13,20 @@ jobs:
   test:
     runs-on: macos-latest
     steps:
-      - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+      # Deliberately NOT Homebrew/actions/setup-homebrew. That action symlinks
+      # this repo into the Taps directory and pre-trusts it, which hides the
+      # tap-trust behaviour we most need to test. Its post-job cleanup then
+      # fails outright once the install step below re-taps the same path as a
+      # real clone. The runner already ships Homebrew, so just update it.
+      - name: Update Homebrew
+        run: brew update
 
-      - name: Tap this repository
-        run: brew tap scottnine/filamental https://github.com/Scottnine/homebrew-filamental
+      # style and audit are developer commands that have to load our Ruby, so
+      # the tap must be trusted for them to run at all.
+      - name: Tap and trust
+        run: |
+          brew tap scottnine/filamental https://github.com/Scottnine/homebrew-filamental
+          brew trust scottnine/filamental
 
       - name: Style
         run: brew style scottnine/filamental
@@ -25,21 +34,20 @@ jobs:
       - name: Audit
         run: brew audit --cask --online scottnine/filamental/filamental
 
-      # setup-homebrew trusts the checked-out tap for us, which is exactly what
-      # a real user does NOT get: since Homebrew 5.1.15 a third-party tap has to
-      # be trusted before its Ruby will even be evaluated. Drop back to an
-      # untrusted, untapped machine so the install below tests the real thing.
+      # Since Homebrew 5.1.15 a third-party tap must be trusted before its Ruby
+      # is evaluated at all. Drop back to an untrusted, untapped machine so the
+      # install below is what a real first-time user actually gets, rather than
+      # something that only works because CI already trusted us.
       - name: Reset to a first-time-user state
         run: |
-          brew untrust scottnine/filamental || true
-          brew untap scottnine/filamental || true
-          echo "--- trust registry ---"
-          cat "$(brew --prefix)/var/homebrew/trust.json" 2>/dev/null || echo "(none)"
+          brew untrust scottnine/filamental
+          brew untap scottnine/filamental
 
       # The real test: downloads the DMG, verifies the checksum, mounts it and
       # links the app. Catches a stale sha256 and a renamed .app bundle, which
-      # audit alone does not. This must be character-for-character the command
-      # the README tells people to run.
+      # audit alone does not. This must stay character-for-character the command
+      # the README tells people to run. A fully qualified cask name auto-taps
+      # and trusts that one cask, which is why no `brew trust` is needed here.
       - name: Install exactly as the README instructs
         run: brew install --cask scottnine/filamental/filamental
 

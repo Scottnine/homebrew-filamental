@@ -9,11 +9,16 @@ folder of markdown notes into a 3D knowledge graph you can fly through, arrange 
 brew install --cask scottnine/filamental/filamental
 ```
 
-That one command taps this repository and installs the app in a single step. If you would rather
-tap first:
+That one command taps this repository and installs the app in a single step.
+
+Use the fully qualified name above rather than tapping first. Since Homebrew 5.1.15 a third-party
+tap has to be explicitly trusted before Homebrew will load anything from it, and a fully qualified
+install grants that trust to this one cask only, which is both the safer and the shorter path. If
+you do prefer to tap first, you need the trust step as well:
 
 ```sh
 brew tap scottnine/filamental
+brew trust --cask scottnine/filamental/filamental
 brew install --cask filamental
 ```
 
