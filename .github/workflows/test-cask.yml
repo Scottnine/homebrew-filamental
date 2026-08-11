@@ -1,0 +1,43 @@
+name: Test cask
+
+# Filamental is developed on Windows, so the cask can never be checked
+# locally. This is the only thing standing between a bad sha256 or a moved
+# download URL and a broken `brew install` for every Mac user.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Tap this repository
+        run: brew tap scottnine/filamental https://github.com/Scottnine/homebrew-filamental
+
+      - name: Style
+        run: brew style scottnine/filamental
+
+      - name: Audit
+        run: brew audit --cask --online scottnine/filamental/filamental
+
+      # The real test: downloads the DMG, verifies the checksum, mounts it and
+      # links the app. Catches a stale sha256 and a renamed .app bundle, which
+      # audit alone does not.
+      - name: Install
+        run: brew install --cask scottnine/filamental/filamental
+
+      - name: Confirm the app landed
+        run: |
+          test -d "/Applications/Filamental.app" || {
+            echo "Filamental.app is not in /Applications"; exit 1;
+          }
+          codesign --verify --deep --strict --verbose=1 "/Applications/Filamental.app"
+          spctl --assess --type execute --verbose "/Applications/Filamental.app"
+
+      - name: Uninstall
+        run: brew uninstall --cask scottnine/filamental/filamental
