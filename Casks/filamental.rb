@@ -18,8 +18,7 @@ cask "filamental" do
   # upgrade` from fighting it: brew will leave the cask alone unless the user
   # explicitly passes --greedy.
   auto_updates true
-
-  depends_on macos: ">= :catalina"
+  depends_on macos: :catalina
 
   app "Filamental.app"
 
