@@ -1,6 +1,6 @@
 cask "filamental" do
-  version "0.3.40"
-  sha256 "49a50f4e78b6bdabe206eac51ae95bed4f9f0a4efa067eeec223de08a78d05e6"
+  version "0.3.41"
+  sha256 "75e413c6c4eb4e6c25107bcc9b1389dcb121ee90320cd7e863f68efc95c93604"
 
   url "https://github.com/Scottnine/filamental/releases/download/v#{version}/Filamental_#{version}_universal.dmg",
       verified: "github.com/Scottnine/filamental/"
