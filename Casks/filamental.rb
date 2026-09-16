@@ -2,8 +2,12 @@ cask "filamental" do
   version "0.3.48"
   sha256 "79a9416c33fff531b8446f9e69de37ebf2a06fc8d3dd09b1c07804c0992fafc5"
 
-  url "https://github.com/Scottnine/filamental/releases/download/v#{version}/Filamental_#{version}_universal.dmg",
-      verified: "github.com/Scottnine/filamental/"
+  # No `verified:` here. It was deprecated in the same Homebrew that disabled
+  # :catalina, and the audit says to rely on the default URL verification. Fixed
+  # pre-emptively: a deprecation in this tap becomes a hard error later, and this
+  # workflow is the only thing that watches the cask, so it goes red on a release
+  # and stays red. That is exactly how :catalina cost five releases.
+  url "https://github.com/Scottnine/filamental/releases/download/v#{version}/Filamental_#{version}_universal.dmg"
   name "Filamental"
   desc "Turn a folder of markdown notes into a 3D knowledge graph"
   homepage "https://filamental.space/"
