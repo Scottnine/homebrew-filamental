@@ -8,6 +8,16 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # Homebrew tightens its style and audit rules without warning, and a new rule
+  # used to surface only when a release pushed the next version, as a failure
+  # email. Running weekly catches a rule change on a quiet Monday instead, and
+  # the Style step below fixes it without anyone being asked.
+  schedule:
+    - cron: '0 6 * * 1'
+
+# The Style step commits its own corrections back to main.
+permissions:
+  contents: write
 
 jobs:
   test:
@@ -28,8 +38,26 @@ jobs:
           brew tap scottnine/filamental https://github.com/Scottnine/homebrew-filamental
           brew trust scottnine/filamental
 
-      - name: Style
-        run: brew style scottnine/filamental
+      # Most new Homebrew rules are marked Correctable, meaning brew can rewrite
+      # the line itself. So fix those first and commit the fix back to main,
+      # then check again: only a rule brew cannot correct fails the job and
+      # sends an email, and that one genuinely needs a person to decide.
+      # A push made with GITHUB_TOKEN does not start another run, so this
+      # cannot loop. Pull requests are checked but never written to.
+      - name: Style, correcting what Homebrew can correct
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAP="$(brew --repo scottnine/filamental)"
+          brew style --fix scottnine/filamental || true
+          if [ -n "$(git -C "$TAP" status --porcelain)" ] && [ "${{ github.event_name }}" != "pull_request" ]; then
+            git -C "$TAP" config user.name  "github-actions[bot]"
+            git -C "$TAP" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git -C "$TAP" commit -am "Apply Homebrew's style corrections"
+            git -C "$TAP" push "https://x-access-token:${GITHUB_TOKEN}@github.com/Scottnine/homebrew-filamental.git" HEAD:main
+            echo "::notice::Committed Homebrew's own style corrections to the cask."
+          fi
+          brew style scottnine/filamental
 
       - name: Audit
         env:
