@@ -22,18 +22,14 @@ cask "filamental" do
   # upgrade` from fighting it: brew will leave the cask alone unless the user
   # explicitly passes --greedy.
   auto_updates true
-  # Filamental itself runs on macOS 10.15 and up, which is what this said until
-  # 2026-09-16. Homebrew DISABLED the :catalina symbol when it dropped support
-  # for that macOS, so the cask stopped auditing and every release from 0.3.44
-  # to 0.3.48 failed the tap's own test workflow while the releases themselves
-  # were fine. Nothing here changed to cause it; Homebrew moved underneath us.
-  #
-  # The syntax is not the problem and does not need replacing: :monterey and
-  # :ventura are in wide use. Only the symbol for a macOS Homebrew no longer
-  # supports is refused. So this is now the oldest one Homebrew still accepts,
-  # which overstates the real requirement slightly and is the closest it can be
-  # expressed. When Big Sur goes the same way, move it up again.
-  depends_on macos: :big_sur
+  # Filamental itself runs on macOS 10.15 and up, older than anything Homebrew
+  # still supports, so the cask asks only for macOS. Naming a minimum is now an
+  # audit error when it is no newer than Homebrew's own floor (OSDependsOn,
+  # 2026-09-29), just as naming a macOS Homebrew had dropped was (:catalina,
+  # 2026-09-16). Do NOT move this up to a newer named version to satisfy a
+  # future audit: that would shut out Macs the app runs on. Name a version here
+  # only if the app itself ever needs one newer than Homebrew's floor.
+  depends_on :macos
 
   app "Filamental.app"
 
