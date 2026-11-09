@@ -1,6 +1,6 @@
 cask "filamental" do
-  version "0.5.15"
-  sha256 "6171768fa44bb08e223671d89bc738341ddf85b8d9402fcc3e27217e19eab25a"
+  version "0.5.16"
+  sha256 "a2e03d3aae869e134ce0af36a509cb81f2aeddaf11c7f390b316e0039ba124ca"
 
   # No `verified:` here. It was deprecated in the same Homebrew that disabled
   # :catalina, and the audit says to rely on the default URL verification. Fixed
